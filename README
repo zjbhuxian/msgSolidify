@@ -1,0 +1,64 @@
+# Subscribe a channel from redis.
+# Formate the message to JSON, figure out the information we aimed at, and store them to mongoDB.
+
+1) subscribe a channel from redis
+2) format the message
+3) figure out items we aimed at, then store them to mongoDB
+
+SIP samples
+	(OSIPS):
+
+		"INVITE sip:2000@192.168.31.134;transport=udp SIP/2.0\r\nVia: SIP/2.0/UDP 192.168.31.81:5060;rport;branch=z9hG4bKPj137e874f-f1ea-40fe-b3ad-60659463a540\r\nFrom: <sip:1000@192.168.31.129>;tag=a2f0dd1a-d204-435b-9682-37806387e7c8\r\nTo: \"2000\xa1\xaa81\" <sip:2000@192.168.31.81>;tag=I7-WjCQzd\r\nContact: <sip:192.168.31.81:5060>\r\nCall-ID: 2Nu7-4fLNa\r\nCSeq: 25136 INVITE\r\nRoute: <sip:192.168.31.129;lr>\r\nAllow: OPTIONS, REGISTER, SUBSCRIBE, NOTIFY, PUBLISH, INVITE, ACK, BYE, CANCEL, UPDATE, PRACK, MESSAGE, REFER\r\nSupported: 100rel, timer, replaces, norefersub\r\nSession-Expires: 1800\r\nMin-SE: 90\r\nMax-Forwards: 69\r\nUser-Agent: Asterisk PBX 16.3.0\r\nContent-Type: application/sdp\r\nContent-Length:   224\r\n\r\nv=0\r\no=- 3048 61 IN IP4 192.168.31.81\r\ns=Asterisk\r\nc=IN IP4 192.168.31.60\r\nt=0 0\r\nm=audio 7076 RTP/AVP 0 100\r\na=rtpmap:0 PCMU/8000\r\na=rtpmap:100 telephone-event/8000\r\na=fmtp:100 0-16\r\na=ptime:20\r\na=maxptime:150\r\na=sendrecv\r\n"
+
+		"ACK sip:192.168.31.129;lr SIP/2.0\r\nVia: SIP/2.0/UDP 192.168.31.129:5060;branch=z9hG4bKe603.b62dffd6.0\r\nFrom: <sip:1000@192.168.31.129>;tag=a2f0dd1a-d204-435b-9682-37806387e7c8\r\nCall-ID: 2Nu7-4fLNa\r\nTo:  <sip:+86000@192.168.31.81>;tag=I7-WjCQzd\r\nCSeq: 25136 ACK\r\nMax-Forwards: 69\r\nUser-Agent: OpenSIPS (2.4.6 (x86_64/linux))\r\nContent-Length: 0\r\n\r\n"
+
+	(ASTERISK):
+		"{\"Event\":\"SIP_LOG\",\"Privilege\":\"call,all\",\"SystemName\":\"asterisk_140_149\",\"call-id\":\"6a748387-4be2-4080-9c91-f5a800d33549\",\"from\":\"15321341564\",\"to\":\"13391580323\",\"sip\":\"{\\n  \\\"sip_content\\\": \\\"INVITE sip:13391580323@10.140.140.241 SIP/2.0\\\\r\\\\nVia: SIP/2.0/UDP 10.140.140.149:5060;rport;branch=z9hG4bKPjdd323bb8-8473-4fc2-8671-aa63f8e1dcb8\\\\r\\\\nFrom: <sip:15321341564@10.140.140.149>;tag=6d1c5aa1-d65a-4457-95e5-7eaffcaff6f3\\\\r\\\\nTo: <sip:13391580323@10.140.140.241>\\\\r\\\\nContact: <sip:asterisk@10.140.140.149:5060>\\\\r\\\\nCall-ID: 6a748387-4be2-4080-9c91-f5a800d33549\\\\r\\\\nCSeq: 8173 INVITE\\\\r\\\\nAllow: OPTIONS, SUBSCRIBE, NOTIFY, PUBLISH, INVITE, ACK, BYE, CANCEL, UPDATE, PRACK, REGISTER, MESSAGE, REFER\\\\r\\\\nSupported: 100rel, timer, replaces, norefersub\\\\r\\\\nRequire: 100rel\\\\r\\\\nSession-Expires: 1800\\\\r\\\\nMin-SE: 90\\\\r\\\\nX-RECORD-SRCDST: 5.2.6.75:5060\\\\r\\\\nX-SRC-CALL-ID: asbcW0ecbRjcw@[240e:68:401:44c6:1:2:72be:3fff]\\\\r\\\\nX-FROM-DOMAIN: bj.ctcims.cn\\\\r\\\\nX-SRC-BYPASS: 0\\\\r\\\\nX-SRC-SERVICE-TYPE: yly\\\\r\\\\nX-SRC-LOG-TRACER: 1\\\\r\\\\nMax-Forwards: 70\\\\r\\\\nUser-Agent: Asterisk PBX 13.26.0\\\\r\\\\nContent-Type: application/sdp\\\\r\\\\nContent-Length:   233\\\\r\\\\n\\\\r\\\\nv=0\\\\r\\\\no=- 451698468 451698468 IN IP4 5.2.162.107\\\\r\\\\ns=Asterisk\\\\r\\\\nc=IN IP4 5.2.162.107\\\\r\\\\nt=0 0\\\\r\\\\nm=audio 10332 RTP/AVP 8 101\\\\r\\\\na=rtpmap:8 PCMA/8000\\\\r\\\\na=rtpmap:101 telephone-event/8000\\\\r\\\\na=fmtp:101 0-16\\\\r\\\\na=ptime:20\\\\r\\\\na=maxptime:150\\\\r\\\\na=sendrecv\\\\r\\\\n\\\"\\n}\"}"
+
+{
+	"sip_name": "ACK",
+	"first_line": "ACK sip:192.168.31.129;lr SIP/2.0", #//self-add
+	"h_via1": "",
+	"h_via2": "",
+	"callid": "",
+	"from": "",
+	"to": "",
+	"cseq": "",
+	"contact": "",
+	"maxforwards": n,
+	"route": "",
+	"record_route": "",
+	"path": "",
+	"content_type": "",
+	"content_length" :"",
+	"expires": "",
+	"authorization":"",
+	"proxy_require":"",
+	"unsupported": "",
+	"allow":"",
+	"event":"",
+	"accept":"",
+	"accept_language":"",
+	"arganization":"",
+	"priority":"",
+	"subject":"",
+	"user_agent":"",
+	"content_disposition":"",
+	"accept_disposition":"",
+	"diversion":"",
+	"History-Info": "",
+	"rpid":"",
+	"refer_to":"",
+	"session_expires":"",
+	"min_se":"",
+	"ppi":"",
+	"pai":"",
+	"privacy":"",
+	"call_info":"",
+	"www_authenticate":"",
+	"proxy_authenticate":"",
+	"min_expires":"",
+	"Date":"",
+	"TimeStamp":""
+}
+
