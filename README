@@ -1,3 +1,5 @@
+# Database: trace_sip
+# collections: sip_asterisk, sip_osips
 # Subscribe a channel from redis.
 # Formate the message to JSON, figure out the information we aimed at, and store them to mongoDB.
 
